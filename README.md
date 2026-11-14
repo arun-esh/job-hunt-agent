@@ -3,7 +3,7 @@
 A hands-on workshop. You will build an AI agent that helps a student with internship and job searches, using the
 [Agent Development Kit (ADK)](https://google.github.io/adk-docs/) and Gemini.
 
-You are on **step 3: Search the web for jobs**. This README covers the setup and steps 1 to 3. Steps 1 to 2 are already done in the code; your job is step 3.
+You are on **step 4: Read a posting**. This README covers the setup and steps 1 to 4. Steps 1 to 3 are already done in the code; your job is step 4.
 
 ## Prerequisites
 
@@ -181,7 +181,7 @@ Use the **Events** tab in the left panel to see the request sent to the model an
 Stop the server with `Ctrl+C`. If the agent answered, your API key works.
 
 **How the code is organised:** the tools and agents for each step are already written for you. Your job is to
-**connect** them: in each step you uncomment a few marked lines (search the code for `STEP 3 TODO`), then
+**connect** them: in each step you uncomment a few marked lines (search the code for `STEP 4 TODO`), then
 read how the pieces fit together.
 
 
@@ -270,6 +270,42 @@ Try: `Find student jobs in Sherbrooke that fit my profile.`
 In the **State** tab you can see `job_results`. **Always open the links yourself**: search results can be out of
 date, and a posting can be closed.
 
+
+## Step 4: Read a posting
+
+**Goal:** read the full text of one posting from its link.
+
+**Concept:** **real-world tools need safety rules, and fetched text is untrusted input.** A web page can contain
+text like "ignore your instructions". The model must treat page text as *data*. The code also limits what the tool can
+reach, so a prompt cannot talk its way past it.
+
+### What is provided: `fetch_posting(url)` in `tools.py`
+
+| Safety rule | Why |
+| --- | --- |
+| Only `http` and `https` | No `file://` or other schemes. |
+| Public addresses only | `localhost` and private networks are refused, including on redirects, so the agent cannot be tricked into reading things on your machine or network. |
+| At most 1 MB, 10 seconds, 8000 characters | A huge page cannot stall or flood the agent. |
+| HTML turned into plain text | Scripts and styles are dropped. |
+
+### Connect it: `job_hunt_app/agent.py`
+
+Search for `STEP 4 TODO` and uncomment the import, the instruction line, and `fetch_posting` in the tools list.
+Install the new dependency with `pip install -r requirements.txt`.
+
+### Run it
+
+```bash
+adk web .
+```
+
+1. `Read this page and summarize it: <paste the link of a real posting>`
+2. `Read http://localhost:8000` and watch it get **blocked**.
+
+**Expected:** the first call returns the page text and a summary. The second shows `status: blocked`.
+Some job sites block automated readers or need JavaScript: then the tool returns an error and the agent should say it
+could not read the page instead of guessing.
+
 ## Repository layout
 
 ```
@@ -278,7 +314,7 @@ job-hunt-agent/
 │   ├── __init__.py
 │   ├── agent.py              the main agent: where you connect things
 │   ├── config.py             the model name used by helper agents
-│   ├── tools.py              read_resume, save_profile, get_profile
+│   ├── tools.py              read_resume, save_profile, get_profile, fetch_posting
 │   └── sub_agents/
 │       └── job_searcher.py
 ├── data/                     YOUR private files, never committed (resume.pdf, profile.json)
@@ -375,3 +411,12 @@ example `student jobs Université de Sherbrooke` or `software internship Sherbro
 ### `429` or `RESOURCE_EXHAUSTED`
 
 You used up the free quota for now. Wait a minute and try again, or use a smaller request.
+
+### `status: blocked`
+
+The link is not a public `http(s)` page, so the tool refused it on purpose. That is the safety rule working.
+
+### The page could not be read
+
+Many job sites block automated readers or only show their content with JavaScript. Try the company's own careers page,
+or copy the posting text into the chat yourself.

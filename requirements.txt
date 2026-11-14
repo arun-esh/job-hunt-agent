@@ -2,3 +2,5 @@
 google-adk==2.13.0
 # reads your resume PDF (step 2)
 pypdf>=5
+# downloads web pages (step 4)
+httpx>=0.27
