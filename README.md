@@ -19,7 +19,7 @@ This branch is **setup only**. By the end of this README your machine is ready t
 ### 1. Get the code
 
 ```bash
-git clone <repository-url> job-hunt-agent
+git clone https://github.com/arun-esh/job-hunt-agent.git job-hunt-agent
 cd job-hunt-agent
 ```
 
