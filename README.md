@@ -19,7 +19,7 @@ You are on **step 5: Match a posting to your profile**. This README covers the s
 ### 1. Get the code
 
 ```bash
-git clone <repository-url> job-hunt-agent
+git clone https://github.com/arun-esh/job-hunt-agent.git job-hunt-agent
 cd job-hunt-agent
 ```
 
