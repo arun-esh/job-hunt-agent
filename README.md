@@ -3,7 +3,7 @@
 A hands-on workshop. You will build an AI agent that helps a student with internship and job searches, using the
 [Agent Development Kit (ADK)](https://google.github.io/adk-docs/) and Gemini.
 
-You are on **step 4: Read a posting**. This README covers the setup and steps 1 to 4. Steps 1 to 3 are already done in the code; your job is step 4.
+You are on **step 5: Match a posting to your profile**. This README covers the setup and steps 1 to 5. Steps 1 to 4 are already done in the code; your job is step 5.
 
 ## Prerequisites
 
@@ -181,7 +181,7 @@ Use the **Events** tab in the left panel to see the request sent to the model an
 Stop the server with `Ctrl+C`. If the agent answered, your API key works.
 
 **How the code is organised:** the tools and agents for each step are already written for you. Your job is to
-**connect** them: in each step you uncomment a few marked lines (search the code for `STEP 4 TODO`), then
+**connect** them: in each step you uncomment a few marked lines (search the code for `STEP 5 TODO`), then
 read how the pieces fit together.
 
 
@@ -306,6 +306,34 @@ adk web .
 Some job sites block automated readers or need JavaScript: then the tool returns an error and the agent should say it
 could not read the page instead of guessing.
 
+
+## Step 5: Match a posting to your profile
+
+**Goal:** compare one posting with your profile and see where you fit and where you have gaps.
+
+**Concept:** **shared state.** `resume_matcher` has two tools (`fetch_posting`, `get_profile`) and saves its report
+with `output_key='match_report'`. Because the model only receives `profile.json`, your private details never reach it.
+
+### What is provided
+
+`job_hunt_app/sub_agents/resume_matcher.py`. Read its instruction: it lists matching skills, gaps and a fit rating,
+forbids adding skills that are not in the profile, and says to write "Could not read the page" instead of guessing.
+
+### Connect it: `job_hunt_app/agent.py`
+
+Search for `STEP 5 TODO` and uncomment the import, the instruction line, and `AgentTool(agent=resume_matcher)`.
+
+### Run it
+
+```bash
+adk web .
+```
+
+Try: `Compare this posting with my profile: <link of a posting>`
+
+**Expected:** the main agent calls `resume_matcher`, which calls `fetch_posting` and `get_profile`, and you get
+matching skills, gaps and a fit rating. The **State** tab shows `match_report`. Check the gaps: are they true?
+
 ## Repository layout
 
 ```
@@ -316,7 +344,8 @@ job-hunt-agent/
 │   ├── config.py             the model name used by helper agents
 │   ├── tools.py              read_resume, save_profile, get_profile, fetch_posting
 │   └── sub_agents/
-│       └── job_searcher.py
+│       ├── job_searcher.py
+│       └── resume_matcher.py
 ├── data/                     YOUR private files, never committed (resume.pdf, profile.json)
 ├── .env.example
 ├── .gitignore
