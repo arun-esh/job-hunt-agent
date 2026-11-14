@@ -3,7 +3,7 @@
 A hands-on workshop. You will build an AI agent that helps a student with internship and job searches, using the
 [Agent Development Kit (ADK)](https://google.github.io/adk-docs/) and Gemini.
 
-You are on **step 7: The brief**. This README covers the setup and steps 1 to 7. Steps 1 to 6 are already done in the code; your job is step 7.
+You are on **the finished agent**. This README covers the setup and steps 1 to 7. Everything is switched on in this branch.
 
 ## Prerequisites
 
