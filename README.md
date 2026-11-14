@@ -19,7 +19,7 @@ You are on **step 2: Your resume becomes a profile**. This README covers the set
 ### 1. Get the code
 
 ```bash
-git clone <repository-url> job-hunt-agent
+git clone https://github.com/arun-esh/job-hunt-agent.git job-hunt-agent
 cd job-hunt-agent
 ```
 
