@@ -3,7 +3,7 @@
 A hands-on workshop. You will build an AI agent that helps a student with internship and job searches, using the
 [Agent Development Kit (ADK)](https://google.github.io/adk-docs/) and Gemini.
 
-You are on **step 2: Your resume becomes a profile**. This README covers the setup and steps 1 to 2. Steps 1 to 1 are already done in the code; your job is step 2.
+You are on **step 3: Search the web for jobs**. This README covers the setup and steps 1 to 3. Steps 1 to 2 are already done in the code; your job is step 3.
 
 ## Prerequisites
 
@@ -181,7 +181,7 @@ Use the **Events** tab in the left panel to see the request sent to the model an
 Stop the server with `Ctrl+C`. If the agent answered, your API key works.
 
 **How the code is organised:** the tools and agents for each step are already written for you. Your job is to
-**connect** them: in each step you uncomment a few marked lines (search the code for `STEP 2 TODO`), then
+**connect** them: in each step you uncomment a few marked lines (search the code for `STEP 3 TODO`), then
 read how the pieces fit together.
 
 
@@ -236,6 +236,40 @@ Select **job_hunt_app** and say: `Build my profile from my resume.`
 Open it: it has skills, education, experience, projects, interests and location, and **no** name, email or phone.
 Then ask `What skills are in my profile?` and the agent calls `get_profile`.
 
+
+## Step 3: Search the web for jobs
+
+**Goal:** let the agent find current postings online, for example "jobs for students in Sherbrooke".
+
+**Concept:** a **specialist agent**. The built-in `google_search` tool runs inside Gemini itself and ADK does not
+let it share an agent with your own Python tools, so it gets an agent of its own, `job_searcher`. The main agent calls
+it as a tool with `AgentTool`. The specialist saves its answer in **session state** with `output_key`, a shared
+notepad that other agents can read.
+
+### What is provided
+
+- `job_hunt_app/sub_agents/job_searcher.py`: the agent. Its tool is `google_search`, its instruction asks for up to
+  three current postings with direct links, and `output_key='job_results'` stores the list.
+- `job_hunt_app/config.py`: the model name used by every helper agent. If you changed the model name in step 1,
+  change it here too.
+
+### Connect it: `job_hunt_app/agent.py`
+
+Search for `STEP 3 TODO` and uncomment: the two imports, the instruction line, and the `AgentTool(agent=job_searcher)`
+entry. `AgentTool` wraps an agent so the main agent can call it like a function and stay in charge afterwards.
+
+### Run it
+
+```bash
+adk web .
+```
+
+Try: `Find student jobs in Sherbrooke that fit my profile.`
+
+**Expected:** the main agent calls `get_profile`, then `job_searcher`, and shows up to three postings with links.
+In the **State** tab you can see `job_results`. **Always open the links yourself**: search results can be out of
+date, and a posting can be closed.
+
 ## Repository layout
 
 ```
@@ -243,7 +277,10 @@ job-hunt-agent/
 ├── job_hunt_app/
 │   ├── __init__.py
 │   ├── agent.py              the main agent: where you connect things
+│   ├── config.py             the model name used by helper agents
 │   ├── tools.py              read_resume, save_profile, get_profile
+│   └── sub_agents/
+│       └── job_searcher.py
 ├── data/                     YOUR private files, never committed (resume.pdf, profile.json)
 ├── .env.example
 ├── .gitignore
@@ -329,3 +366,12 @@ Your PDF is a scanned image. Export it again as a text PDF from Word or Google D
 
 The virtual environment is not active, or you did not install the new requirements. Run
 `source .venv/bin/activate` and `pip install -r requirements.txt`.
+
+### The search returns no jobs, closed jobs, or broken links
+
+The built-in search is only as good as the web it finds. Open every link yourself. Try a more specific request, for
+example `student jobs Université de Sherbrooke` or `software internship Sherbrooke`.
+
+### `429` or `RESOURCE_EXHAUSTED`
+
+You used up the free quota for now. Wait a minute and try again, or use a smaller request.
