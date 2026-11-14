@@ -1,0 +1,2 @@
+# Pinned to the version this course was built and tested with.
+google-adk==2.13.0

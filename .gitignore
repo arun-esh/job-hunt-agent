@@ -1,0 +1,12 @@
+# Secrets and local environment
+.env
+.venv/
+
+# Python and ADK local files
+__pycache__/
+*.pyc
+.adk/
+.DS_Store
+
+# Your private files: resume, profile, saved postings. The whole folder is never committed.
+data/
