@@ -3,8 +3,7 @@
 A hands-on workshop. You will build an AI agent that helps a student with internship and job searches, using the
 [Agent Development Kit (ADK)](https://google.github.io/adk-docs/) and Gemini.
 
-You are on **step 1: a bare agent**. By the end of this README you will have a working agent that you can chat
-with in your browser.
+You are on **step 2: Your resume becomes a profile**. This README covers the setup and steps 1 to 2. Steps 1 to 1 are already done in the code; your job is step 2.
 
 ## Prerequisites
 
@@ -181,14 +180,72 @@ invented, because the agent has no source for them.
 Use the **Events** tab in the left panel to see the request sent to the model and its reply.
 Stop the server with `Ctrl+C`. If the agent answered, your API key works.
 
+**How the code is organised:** the tools and agents for each step are already written for you. Your job is to
+**connect** them: in each step you uncomment a few marked lines (search the code for `STEP 2 TODO`), then
+read how the pieces fit together.
+
+
+## Step 2: Your resume becomes a profile
+
+**Goal:** turn your resume PDF into a small `profile.json` that is safe to send to the model.
+
+**Concept:** a **tool** is a plain Python function. ADK shows the model its name, parameters and docstring; the model
+decides *when* to call it, but the function is ordinary code that does exactly what is written. That is why code is
+a guarantee and a prompt is only a probability.
+
+### Add your resume
+
+The `data/` folder is yours and **is never committed** (it is in `.gitignore`). Create it and add your resume:
+
+```bash
+mkdir -p data
+cp /path/to/your/resume.pdf data/resume.pdf     # any file named resume*.pdf works
+git status                                      # data/ must NOT appear in this list
+```
+
+### What is provided: `job_hunt_app/tools.py`
+
+| Function | What it does |
+| --- | --- |
+| `read_resume()` | Reads `data/resume*.pdf` with `pypdf`. **Code** removes emails, phone numbers and links from the text. |
+| `save_profile(skills, education, experience, projects, interests, location)` | Writes `data/profile.json`. The typed arguments tell the model exactly which fields to fill. There is no field for a name, email or phone. |
+| `get_profile()` | Returns the saved profile. Every later agent will use this instead of the resume. |
+
+> **Privacy, honestly:** code can reliably remove emails, phone numbers and links, but not your name. The model reads
+> the redacted resume text **once**, to fill in the profile, so that text (name included) goes to Google's API one
+> time. After that, only the fields in `profile.json` are used.
+
+### Connect it: `job_hunt_app/agent.py`
+
+Search for `STEP 2 TODO` and uncomment three places: the import, the two instruction lines, and the three tools.
+Make sure you also install the new dependency:
+
+```bash
+pip install -r requirements.txt
+```
+
+### Run it
+
+```bash
+adk web .
+```
+
+Select **job_hunt_app** and say: `Build my profile from my resume.`
+
+**Expected:** the **Events** tab shows `read_resume` and then `save_profile`. A file `data/profile.json` appears.
+Open it: it has skills, education, experience, projects, interests and location, and **no** name, email or phone.
+Then ask `What skills are in my profile?` and the agent calls `get_profile`.
+
 ## Repository layout
 
 ```
 job-hunt-agent/
 ├── job_hunt_app/
 │   ├── __init__.py
-│   └── agent.py
-├── .env.example                template for your API key
+│   ├── agent.py              the main agent: where you connect things
+│   ├── tools.py              read_resume, save_profile, get_profile
+├── data/                     YOUR private files, never committed (resume.pdf, profile.json)
+├── .env.example
 ├── .gitignore
 ├── requirements.txt
 └── README.md
@@ -258,3 +315,17 @@ at <https://aistudio.google.com/apikey>. Restart `adk web` after any change to `
 
 `.env` does not exist, you are not running from the repository root, or `.env` still holds the placeholder.
 Repeat setup step 3 and restart `adk web`.
+
+### `No resume found`
+
+The resume must be a PDF named `resume*.pdf` inside the `data/` folder at the repository root, for example
+`data/resume.pdf`. Check with `ls data`.
+
+### `The PDF has no readable text`
+
+Your PDF is a scanned image. Export it again as a text PDF from Word or Google Docs.
+
+### `ModuleNotFoundError: No module named 'pypdf'` (or `httpx`)
+
+The virtual environment is not active, or you did not install the new requirements. Run
+`source .venv/bin/activate` and `pip install -r requirements.txt`.

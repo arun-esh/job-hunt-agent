@@ -1,2 +1,4 @@
 # Pinned to the version this course was built and tested with.
 google-adk==2.13.0
+# reads your resume PDF (step 2)
+pypdf>=5
