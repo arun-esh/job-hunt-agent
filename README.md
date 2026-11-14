@@ -3,7 +3,7 @@
 A hands-on workshop. You will build an AI agent that helps a student with internship and job searches, using the
 [Agent Development Kit (ADK)](https://google.github.io/adk-docs/) and Gemini.
 
-You are on **step 2: Your resume becomes a profile**. This README covers the setup and steps 1 to 2. Steps 1 to 1 are already done in the code; your job is step 2.
+You are on **step 2: Your resume becomes a profile**. This README covers the setup and steps 1 to 2. Step 1 is already done in the code; your job is step 2.
 
 ## Prerequisites
 
