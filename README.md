@@ -3,7 +3,7 @@
 A hands-on workshop. You will build an AI agent that helps a student with internship and job searches, using the
 [Agent Development Kit (ADK)](https://google.github.io/adk-docs/) and Gemini.
 
-You are on **step 6: Work in parallel**. This README covers the setup and steps 1 to 6. Steps 1 to 5 are already done in the code; your job is step 6.
+You are on **step 7: The brief**. This README covers the setup and steps 1 to 7. Steps 1 to 6 are already done in the code; your job is step 7.
 
 ## Prerequisites
 
@@ -181,7 +181,7 @@ Use the **Events** tab in the left panel to see the request sent to the model an
 Stop the server with `Ctrl+C`. If the agent answered, your API key works.
 
 **How the code is organised:** the tools and agents for each step are already written for you. Your job is to
-**connect** them: in each step you uncomment a few marked lines (search the code for `STEP 6 TODO`), then
+**connect** them: in each step you uncomment a few marked lines (search the code for `STEP 7 TODO`), then
 read how the pieces fit together.
 
 
@@ -380,6 +380,35 @@ Try: `Find student jobs in Sherbrooke.`
 - **State** tab: `job_results`, `match_1`, `match_2`, `match_3`.
 - The chat answer is only partly useful in this step, because nothing combines the three reports yet. That is step 7.
 
+
+## Step 7: The brief
+
+**Goal:** combine everything into one ranked answer for the student.
+
+**Concept:** **fan in.** `brief_writer` runs last and reads `job_results` and `match_1` to `match_3` from state. ADK
+fills each `{name}` in its instruction from state before the model is called, so every name must match an `output_key`.
+
+### What is provided
+
+`job_hunt_app/sub_agents/brief_writer.py`: ranks the jobs, gives the link, why it fits, the main gap and a rating, says
+plainly if a page could not be read, and ends with a next step.
+
+### Connect it: `job_hunt_app/pipeline.py`
+
+Search for `STEP 7 TODO` and uncomment two things: the import of `brief_writer` and the `brief_writer,` line inside
+`find_jobs`. The order of that list is the order the agents run.
+
+### Run it
+
+```bash
+adk web .
+```
+
+Try: `Find student jobs in Sherbrooke.`
+
+**Expected:** a short ranked brief with links, fit ratings and gaps, based only on what the workers found. Open the
+links and check the facts. If a page could not be read, the brief should say so instead of guessing.
+
 ## Repository layout
 
 ```
@@ -393,7 +422,8 @@ job-hunt-agent/
 │   └── sub_agents/
 │       ├── job_searcher.py
 │       ├── resume_matcher.py
-│       └── workers.py
+│       ├── workers.py
+│       └── brief_writer.py
 ├── data/                     YOUR private files, never committed (resume.pdf, profile.json)
 ├── .env.example
 ├── .gitignore
