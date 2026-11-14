@@ -3,7 +3,7 @@
 A hands-on workshop. You will build an AI agent that helps a student with internship and job searches, using the
 [Agent Development Kit (ADK)](https://google.github.io/adk-docs/) and Gemini.
 
-You are on **step 5: Match a posting to your profile**. This README covers the setup and steps 1 to 5. Steps 1 to 4 are already done in the code; your job is step 5.
+You are on **step 6: Work in parallel**. This README covers the setup and steps 1 to 6. Steps 1 to 5 are already done in the code; your job is step 6.
 
 ## Prerequisites
 
@@ -181,7 +181,7 @@ Use the **Events** tab in the left panel to see the request sent to the model an
 Stop the server with `Ctrl+C`. If the agent answered, your API key works.
 
 **How the code is organised:** the tools and agents for each step are already written for you. Your job is to
-**connect** them: in each step you uncomment a few marked lines (search the code for `STEP 5 TODO`), then
+**connect** them: in each step you uncomment a few marked lines (search the code for `STEP 6 TODO`), then
 read how the pieces fit together.
 
 
@@ -334,6 +334,52 @@ Try: `Compare this posting with my profile: <link of a posting>`
 **Expected:** the main agent calls `resume_matcher`, which calls `fetch_posting` and `get_profile`, and you get
 matching skills, gaps and a fit rating. The **State** tab shows `match_report`. Check the gaps: are they true?
 
+
+## Step 6: Work in parallel
+
+**Goal:** search once, then read and match three postings **at the same time**.
+
+**Concept:** **orchestration with plain code.** Search, fetch and match depend on each other, so the parallel part is
+across jobs: three workers, one per job.
+
+```
+find_jobs  (SequentialAgent: fixed order)
+ ├─ 1. job_searcher                    writes state["job_results"]
+ └─ 2. job_workers  (ParallelAgent: all at the same time)
+        worker_1 ─> fetch + match job 1 ─> state["match_1"]
+        worker_2 ─> fetch + match job 2 ─> state["match_2"]
+        worker_3 ─> fetch + match job 3 ─> state["match_3"]
+```
+
+`ParallelAgent` and `SequentialAgent` are plain code, not a model, so the order and the parallelism are predictable.
+Each worker saves to its **own** state key so they never overwrite each other.
+
+### What is provided
+
+`job_hunt_app/sub_agents/workers.py`: a small function builds worker 1, 2 and 3. Each worker's instruction contains
+`{job_results?}`: ADK fills it from state before calling the model (the `?` means "empty if missing") and the worker
+takes the job with its own number.
+
+### Connect it
+
+1. `job_hunt_app/pipeline.py`: search for `STEP 6 TODO` and uncomment `job_workers` and `find_jobs`.
+2. `job_hunt_app/agent.py`: search for `STEP 6 TODO` and uncomment the import, the instruction line, and
+   `AgentTool(agent=find_jobs)`.
+
+### Run it
+
+```bash
+adk web .
+```
+
+Try: `Find student jobs in Sherbrooke.`
+
+**Expected:**
+- **Trace** tab: `worker_1`, `worker_2` and `worker_3` start at about the same time and overlap, instead of running
+  one after another.
+- **State** tab: `job_results`, `match_1`, `match_2`, `match_3`.
+- The chat answer is only partly useful in this step, because nothing combines the three reports yet. That is step 7.
+
 ## Repository layout
 
 ```
@@ -343,9 +389,11 @@ job-hunt-agent/
 │   ├── agent.py              the main agent: where you connect things
 │   ├── config.py             the model name used by helper agents
 │   ├── tools.py              read_resume, save_profile, get_profile, fetch_posting
+│   ├── pipeline.py           find_jobs: the fixed order and the parallel step
 │   └── sub_agents/
 │       ├── job_searcher.py
-│       └── resume_matcher.py
+│       ├── resume_matcher.py
+│       └── workers.py
 ├── data/                     YOUR private files, never committed (resume.pdf, profile.json)
 ├── .env.example
 ├── .gitignore
@@ -449,3 +497,12 @@ The link is not a public `http(s)` page, so the tool refused it on purpose. That
 
 Many job sites block automated readers or only show their content with JavaScript. Try the company's own careers page,
 or copy the posting text into the chat yourself.
+
+### `Context variable not found: <name>`
+
+A `{name}` in an instruction does not match any state key. Names must match an `output_key` exactly
+(`job_results`, `match_1`, `match_2`, `match_3`). Check for typos in the instruction and in `output_key`.
+
+### Only one worker seems to answer in the chat
+
+The chat shows the last answer only. Open the **State** tab to see `match_1`, `match_2` and `match_3`.
